@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
-import '/services/api_service.dart';
+import 'package:intl/intl.dart';
+import '../../services/api_service.dart';
 
 class AddBookingScreen extends StatefulWidget {
   final String token;
@@ -11,116 +11,221 @@ class AddBookingScreen extends StatefulWidget {
 }
 
 class _AddBookingScreenState extends State<AddBookingScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _courtIdController = TextEditingController();
+  final _courtIdController = TextEditingController();
+  final ApiService api = ApiService();
   
-  DateTime _startTime = DateTime.now().add(const Duration(minutes: 30));
-  DateTime _endTime = DateTime.now().add(const Duration(hours: 1, minutes: 30));
-  
+  // Biến lưu ngày giờ đã chọn
+  DateTime _selectedDate = DateTime.now();
+  TimeOfDay _startTime = const TimeOfDay(hour: 7, minute: 0);
+  TimeOfDay _endTime = const TimeOfDay(hour: 8, minute: 0);
   bool _isLoading = false;
-  String? _errorMessage;
+
+  // Hàm chọn ngày
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2026, 12),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF1A237E), // Màu xanh Navy
+              onPrimary: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) setState(() => _selectedDate = picked);
+  }
+
+  // Hàm chọn giờ
+  Future<void> _pickTime(bool isStart) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: isStart ? _startTime : _endTime,
+    );
+    if (picked != null) {
+      setState(() {
+        if (isStart) _startTime = picked;
+        else _endTime = picked;
+      });
+    }
+  }
+
+  void _submitBooking() async {
+    if (_courtIdController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng nhập số sân!"), backgroundColor: Colors.red));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    // Ghép ngày + giờ lại thành chuỗi chuẩn ISO
+    final startDateTime = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _startTime.hour, _startTime.minute);
+    final endDateTime = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _endTime.hour, _endTime.minute);
+
+    bool success = await api.bookCourt(
+      widget.token,
+      int.parse(_courtIdController.text),
+      startDateTime.toIso8601String(),
+      endDateTime.toIso8601String(),
+    );
+
+    setState(() => _isLoading = false);
+
+    if (mounted) {
+      if (success) {
+        // Hiện thông báo thành công đẹp mắt
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            icon: const Icon(Icons.check_circle, color: Colors.green, size: 50),
+            title: const Text("Đặt Sân Thành Công!"),
+            content: const Text("Yêu cầu của bạn đã được gửi. Vui lòng đến sân đúng giờ nhé."),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx); // Đóng popup
+                  Navigator.pop(context); // Về trang chủ
+                },
+                child: const Text("Về Trang Chủ"),
+              )
+            ],
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("❌ Đặt sân thất bại (Có thể đã kín lịch)"), backgroundColor: Colors.red));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Đặt Sân Mới'), backgroundColor: Colors.indigo, foregroundColor: Colors.white),
+      backgroundColor: const Color(0xFFF5F5FA),
+      appBar: AppBar(title: const Text("Đặt Lịch Ngay")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("Thông tin đặt sân", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo)),
-              const SizedBox(height: 20),
-              
-              // 1. NHẬP SỐ SÂN
-              TextFormField(
-                controller: _courtIdController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Số sân (Ví dụ: 1)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  prefixIcon: const Icon(Icons.stadium),
-                ),
-                validator: (value) => value!.isEmpty ? 'Vui lòng nhập số sân' : null,
+        child: Column(
+          children: [
+            // Card chọn thông tin
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 5))],
               ),
-              const SizedBox(height: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Thông tin đặt sân", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
+                  const SizedBox(height: 20),
+                  
+                  // Nhập ID Sân
+                  TextField(
+                    controller: _courtIdController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: "Nhập Số Sân (ID)",
+                      prefixIcon: Icon(Icons.sports_tennis),
+                      hintText: "Ví dụ: 1",
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Divider(),
+                  const SizedBox(height: 10),
 
-              // 2. CHỌN GIỜ
-              _buildDateTimePicker("Bắt đầu lúc", _startTime, (val) => setState(() => _startTime = val)),
-              const Divider(height: 30),
-              _buildDateTimePicker("Kết thúc lúc", _endTime, (val) => setState(() => _endTime = val)),
-              
-              const SizedBox(height: 30),
+                  // Chọn Ngày
+                  const Text("Ngày chơi", style: TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 10),
+                  InkWell(
+                    onTap: _pickDate,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(10)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(DateFormat('dd/MM/yyyy').format(_selectedDate), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          const Icon(Icons.calendar_month, color: Color(0xFF1A237E)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 20),
 
-              // 3. HIỂN THỊ LỖI (NẾU CÓ)
-              if (_errorMessage != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.red.shade200)),
-                  child: Row(
+                  // Chọn Giờ Bắt đầu & Kết thúc
+                  Row(
                     children: [
-                      const Icon(Icons.error_outline, color: Colors.red),
-                      const SizedBox(width: 10),
-                      Expanded(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red))),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Bắt đầu", style: TextStyle(color: Colors.grey)),
+                            const SizedBox(height: 10),
+                            InkWell(
+                              onTap: () => _pickTime(true),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                                decoration: BoxDecoration(color: const Color(0xFFE8EAF6), borderRadius: BorderRadius.circular(10)),
+                                child: Center(child: Text(_startTime.format(context), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)))),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      const Icon(Icons.arrow_forward, color: Colors.grey),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Kết thúc", style: TextStyle(color: Colors.grey)),
+                            const SizedBox(height: 10),
+                            InkWell(
+                              onTap: () => _pickTime(false),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                                decoration: BoxDecoration(color: const Color(0xFFE8EAF6), borderRadius: BorderRadius.circular(10)),
+                                child: Center(child: Text(_endTime.format(context), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)))),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-
-              // 4. NÚT XÁC NHẬN
-              SizedBox(
-                width: double.infinity, height: 50,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submitBooking,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
-                  child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text("XÁC NHẬN ĐẶT SÂN", style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: 30),
+
+            // Nút Xác Nhận
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _submitBooking,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1A237E),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+                child: _isLoading 
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("XÁC NHẬN ĐẶT SÂN", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  Widget _buildDateTimePicker(String label, DateTime time, Function(DateTime) onChanged) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text("${time.hour}:${time.minute.toString().padLeft(2,'0')} - ${time.day}/${time.month}/${time.year}", style: const TextStyle(fontSize: 16, color: Colors.black87)),
-      trailing: const Icon(Icons.calendar_month, color: Colors.indigo),
-      onTap: () async {
-        final date = await showDatePicker(context: context, initialDate: time, firstDate: DateTime.now(), lastDate: DateTime(2030));
-        if (date != null && mounted) {
-          final timeOfDay = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(time));
-          if (timeOfDay != null) {
-            onChanged(DateTime(date.year, date.month, date.day, timeOfDay.hour, timeOfDay.minute));
-          }
-        }
-      },
-    );
-  }
-
-  Future<void> _submitBooking() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() { _isLoading = true; _errorMessage = null; });
-
-    try {
-      final api = ApiService();
-      await api.bookCourt(widget.token, int.parse(_courtIdController.text), _startTime as String, _endTime as String);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Đặt sân thành công!'), backgroundColor: Colors.green));
-        Navigator.pop(context, true); // Trả về true để màn hình danh sách biết mà reload
-      }
-    } on DioException catch (e) {
-      if (mounted) setState(() => _errorMessage = e.response?.data?.toString() ?? "Lỗi kết nối!");
-    } catch (e) {
-      if (mounted) setState(() => _errorMessage = "Lỗi: $e");
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
   }
 }

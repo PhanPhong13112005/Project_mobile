@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter_1771020535_phan_luu_phong/screens/booking/booking_screen.dart';
-import 'package:mobile_flutter_1771020535_phan_luu_phong/screens/home/home_screen.dart';
-import 'package:mobile_flutter_1771020535_phan_luu_phong/screens/profile/profile_screen.dart';
-import 'package:mobile_flutter_1771020535_phan_luu_phong/screens/wallet/wallet_screen.dart';
-
+import 'package:mobile_flutter_1771020535_phan_luu_phong/screens/home/home/home_screen.dart';
+import 'wallet/wallet_screen.dart';
+import 'profile/profile_screen.dart';
 
 class MainLayout extends StatefulWidget {
   final String token;
@@ -20,9 +18,9 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   void initState() {
     super.initState();
+    // Danh sách các tab chính của ứng dụng
     _screens = [
       HomeScreen(token: widget.token),
-      BookingScreen(token: widget.token),
       WalletScreen(token: widget.token),
       ProfileScreen(token: widget.token),
     ];
@@ -31,19 +29,47 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) => setState(() => _currentIndex = index),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Trang chủ'),
-          NavigationDestination(icon: Icon(Icons.sports_tennis_outlined), selectedIcon: Icon(Icons.sports_tennis), label: 'Đặt sân'),
-          NavigationDestination(icon: Icon(Icons.account_balance_wallet_outlined), selectedIcon: Icon(Icons.account_balance_wallet), label: 'Ví'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Cá nhân'),
-        ],
+      body: _screens[_currentIndex],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) => setState(() => _currentIndex = index),
+            backgroundColor: Colors.white,
+            selectedItemColor: const Color(0xFF1A237E), // Xanh Navy
+            unselectedItemColor: Colors.grey.shade400,
+            showUnselectedLabels: true,
+            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            type: BottomNavigationBarType.fixed,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.sports_tennis),
+                activeIcon: Icon(Icons.sports_tennis, color: Color(0xFF1A237E)),
+                label: "Sân Bóng",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.account_balance_wallet_outlined),
+                activeIcon: Icon(Icons.account_balance_wallet, color: Color(0xFF1A237E)),
+                label: "Ví Tiền",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person, color: Color(0xFF1A237E)),
+                label: "Cá Nhân",
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

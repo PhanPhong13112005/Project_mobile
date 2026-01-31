@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../main_layout.dart';
-import 'register_screen.dart'; // Import màn hình đăng ký
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,16 +21,12 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final token = await _apiService.login(_userController.text, _passController.text);
       if (token != null && mounted) {
-        // Đăng nhập thành công -> Vào MainLayout
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => MainLayout(token: token)),
-        );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => MainLayout(token: token)));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Sai tài khoản hoặc mật khẩu")));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("❌ Sai tài khoản hoặc mật khẩu"), backgroundColor: Colors.red));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lỗi: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lỗi kết nối: $e")));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -39,48 +35,79 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.sports_tennis, size: 80, color: Colors.indigo),
-              const SizedBox(height: 20),
-              const Text("PICKLEBALL PRO", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.indigo)),
-              const SizedBox(height: 40),
-              TextField(
-                controller: _userController, 
-                decoration: const InputDecoration(labelText: "Tài khoản", border: OutlineInputBorder(), prefixIcon: Icon(Icons.person))
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Header cong cong đẹp mắt
+            Container(
+              height: 300,
+              decoration: const BoxDecoration(
+                color: Color(0xFF1A237E),
+                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(50), bottomRight: Radius.circular(50)),
               ),
-              const SizedBox(height: 15),
-              TextField(
-                controller: _passController, 
-                obscureText: true, 
-                decoration: const InputDecoration(labelText: "Mật khẩu", border: OutlineInputBorder(), prefixIcon: Icon(Icons.lock))
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.sports_tennis, size: 80, color: Color(0xFF76FF03)), // Icon Pickleball
+                    SizedBox(height: 15),
+                    Text("VỢT THỦ PHỐ NÚI", style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                    Text("Pickleball Club Management", style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  ],
+                ),
               ),
-              const SizedBox(height: 25),
-              SizedBox(
-                width: double.infinity, height: 50,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _login,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
-                  child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text("ĐĂNG NHẬP", style: TextStyle(fontWeight: FontWeight.bold)),
-                )
+            ),
+            const SizedBox(height: 40),
+            
+            // Form đăng nhập
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: Column(
+                children: [
+                  const Text("ĐĂNG NHẬP", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
+                  const SizedBox(height: 25),
+                  TextField(
+                    controller: _userController,
+                    decoration: const InputDecoration(labelText: "Tài khoản", prefixIcon: Icon(Icons.person_outline)),
+                  ),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: _passController,
+                    obscureText: true,
+                    decoration: const InputDecoration(labelText: "Mật khẩu", prefixIcon: Icon(Icons.lock_outline)),
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1A237E),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        elevation: 8,
+                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text("VÀO SÂN NGAY", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Chưa là thành viên?"),
+                      TextButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                        child: const Text("Đăng ký ngay", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
+                      )
+                    ],
+                  )
+                ],
               ),
-              const SizedBox(height: 15),
-              // Nút chuyển sang Đăng ký
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context, 
-                    MaterialPageRoute(builder: (_) => const RegisterScreen())
-                  );
-                }, 
-                child: const Text("Chưa có tài khoản? Đăng ký ngay")
-              )
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
