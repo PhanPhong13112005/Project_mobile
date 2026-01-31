@@ -30,14 +30,24 @@ android {
         versionName = flutter.versionName
     }
 
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+    // Đã sửa cú pháp từ Groovy sang Kotlin DSL
+    signingConfigs {
+        create("release") {
+            keyAlias = "upload"
+            keyPassword = "11112005" 
+            storeFile = file("D:/upload-keystore.jks")
+            storePassword = "11112005"
         }
     }
-}
+
+    buildTypes {
+        getByName("release") {
+            // Đã sửa cú pháp gán signingConfig
+            signingConfig = signingConfigs.getByName("release")
+            // ...
+        }
+    }
+} // Dấu đóng ngoặc của khối android (Đã xóa dấu } thừa ở trên)
 
 flutter {
     source = "../.."
