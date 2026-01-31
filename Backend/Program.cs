@@ -52,13 +52,13 @@ builder.Services.AddAuthentication(options => {
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Thay vì để trong if, hãy để Swagger chạy tự do như thế này:
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    c.RoutePrefix = "swagger"; // Điều này giúp truy cập qua /swagger
+});
 app.UseHttpsRedirection();
 
 app.UseAuthentication(); 
