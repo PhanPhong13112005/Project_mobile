@@ -141,3 +141,15 @@ E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\obj\Release\net8.0\refi
 E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\obj\Release\net8.0\Backend.pdb
 E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\obj\Release\net8.0\Backend.genruntimeconfig.cache
 E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\obj\Release\net8.0\ref\Backend.dll
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\web.config
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\appsettings.Development.json
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\appsettings.json
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\Backend.deps.json
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\Backend.runtimeconfig.json
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\Backend.staticwebassets.endpoints.json
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\publish\web.config
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\publish\appsettings.Development.json
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\publish\appsettings.json
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\publish\Backend.deps.json
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\publish\Backend.runtimeconfig.json
+E:\Nam3\mobile_flutter_1771020535_phan_luu_phong\Backend\bin\Release\net8.0\publish\publish\Backend.staticwebassets.endpoints.json

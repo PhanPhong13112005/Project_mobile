@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 class ApiService {
   // QUAN TRỌNG: Nếu chạy máy ảo Android thì dùng 10.0.2.2
   // Nếu chạy máy thật hoặc iOS thì phải dùng IP LAN của máy tính (VD: 192.168.1.x)
-  static const String baseUrl = 'http://localhost:5110/api';
+  static const String baseUrl = "https://luuphong-cntt1708.ddns.net/api";
 
   final Dio _dio = Dio(
     BaseOptions(
